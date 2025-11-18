@@ -55,58 +55,43 @@ Located in: TempMLP_SCM.py
 
 from TempMLP_SCM import TemporalMLPSCM
 
-model = TemporalMLPSCM(
-    seq_len=100,
-    num_features=10,
-    num_causes=10,
-    num_layers=4,
-    hidden_dim=32,
-    alpha=0.3,
-    beta=1.2,
-    period=20,
-    use_periodicity=True,
-    device="cpu",
-)
 
-X, y = model.forward()
-print(X.shape)   # (100, 10)
+## 5. Temporal Evaluation — *Analyse d’un SEUL dataset*
 
-X, y = model.generate_dataset(n_individuals=50)
-print(X.shape)    # (50 * seq_len , num_features)
+**But :** vérifier qu’un dataset généré contient bien un **signal temporel exploitable** (et pas du simple bruit).
 
-## 5. Temporal Evaluation (ONE dataset)
+📍 Localisation : `metrics_uni.py`
 
-Located in metrics_uni.py
+Ce module analyse **un dataset unique** à travers :
 
-from metrics_uni import evaluate_dataset_temporality
-evaluate_dataset_tempority(X)
+- **Stationnarité (ADF test)** → détecter si la série est non-stationnaire (réaliste).
+- **Autocorrélation (ACF)** → vérifier la présence de dépendances temporelles.
+- **Spectre de puissance (periodogram)** → détecter saisonnalité / périodicité dominante.
 
-## 6. Dataset-Level Diversity (MULTIPLE datasets)
+➡️ **Objectif final :** s’assurer que les séries générées ne sont pas du bruit pur, mais qu’elles portent un vrai *signal temporel* utilisable par un modèle d’apprentissage.
 
-Located in: metrics.py
+---
 
-from metrics import (
-    dataset_signature, compute_correlation_signature,
-    pairwise_distances, diversity_metrics,
-    plot_all_diversity
-)
+## 6. Dataset-Level Diversity — *Comparer PLUSIEURS datasets*
 
-X_list = []
-for _ in range(10):
-    X, y = model.generate_dataset(50)    # ⚠ mêmes hyperparams
-    X_list.append(X)
+**But :** évaluer si le générateur produit **de la diversité statistique réelle** entre différents jeux de données – indispensable pour constituer un corpus de *pre-training* pour un foundation model.
 
-# Extract signatures
-sigs = [dataset_signature(X)["combined"] for X in X_list]
-corr_sigs = [compute_correlation_signature(X) for X in X_list]
+📍 Localisation : `metrics.py`
 
-# Distance matrices
-D_global = pairwise_distances(sigs)
-D_corr = compute_pairwise_corr_distances(corr_sigs)
+Chaque dataset est résumé en une **signature statistique** composée de trois volets :
 
-# Diversity indicators
-print(diversity_metrics(D_global))
-print(summarize_corr_diversity(D_corr))
+| Aspect analysé  | Ce qui est mesuré |
+|-----------------|------------------|
+| **Marginal**    | moyenne, variance, skewness, kurtosis, quantiles… |
+| **Temporel**    | valeurs d’ACF à différents lags, decoherence time, fréquence dominante… |
+| **Structure**   | corrélations entre variables (flattened correlation matrix) |
 
-# Plots
-plot_all_diversity(D_global, D_corr)
+À partir de ces signatures :
+- une **matrice de distances pairwise** est calculée entre datasets ;
+- puis des **indicateurs de diversité** sont extraits :
+  - `mean_pairwise_distance` → diversité moyenne
+  - `min_pairwise_distance` → datasets similaires
+  - `max_pairwise_distance` → datasets très différents
+  - `corr_mean`, `corr_std` → diversité structurelle (corrélations)
+
+**Objectif final :** déterminer si le pipeline est capable de générer des **scénarios variés, cohérents et réalistes** – une propriété essentielle pour le pré-entraînement d’un *time series foundation model*.
