@@ -48,10 +48,10 @@ pip install -r requirements.txt
 
 Located in: TempMLP_SCM.py
 
-✔ Autoregressive dependence: h_t = h_new + α * h_{t−1}
-✔ Periodicity: h_t += β * h_{t−period}
-✔ Gaussian noise: + ε
-✔ Block-wise dropout init → increases structural diversity
+- Autoregressive dependence: h_t = h_new + α * h_{t−1}
+- Periodicity: h_t += β * h_{t−period}
+- Gaussian noise: + ε
+- Block-wise dropout init → increases structural diversity
 
 from TempMLP_SCM import TemporalMLPSCM
 
