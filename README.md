@@ -20,16 +20,15 @@ This work is designed for a **TempTabFM** research context:
 
 ## 📁 2. Repository Structure 
 
-.
-├── prior/                      # Copied from TabICL (required)
-│   ├── utils/                 # GaussianNoise, XSampler
-│   └── …
-├── TempMLP_SCM.py             # Core temporal SCM generator
-├── metrics_uni.py             # Evaluate ONE dataset (temporal signal)
-├── metrics.py                 # Compare several datasets (diversity)
-├── SCM_temp_MLP.ipynb         # Full benchmark + visualisation
-├── requirements.txt
-└── README.md
+
+	•	prior/ – utilities from TabICL
+	•	contains GaussianNoise, XSampler, etc.
+	•	TempMLP_SCM.py – temporal SCM generator (MLP + AR + periodicity)
+	•	metrics_uni.py – evaluation of one dataset (ACF, ADF, CCF, spectrum)
+	•	metrics.py – evaluation of multiple datasets + diversity metrics
+	•	SCM_temp_MLP.ipynb – main notebook: generation + visualisation
+	•	requirements.txt – dependencies
+	•	README.md – project explanation
 
 ---
 
