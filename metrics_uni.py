@@ -9,7 +9,7 @@ from scipy.signal import periodogram
 # ============================================================
 def compute_acf(series, nlags=20):
     """
-    Retourne l'ACF d'une série 1D.
+    Retourne l'ACF d'une série.
     """
     series = np.asarray(series)
     return acf(series, nlags=nlags, fft=True)
@@ -95,14 +95,14 @@ def evaluate_dataset_temporality(X, max_features_to_plot=3):
     """
 
     if not isinstance(X, np.ndarray):
-        X = X.detach().cpu().numpy()   # ← CORRECTION
+        X = X.detach().cpu().numpy()  
 
     T, D = X.shape
     print(f"Dataset shape: {T} timesteps × {D} features\n")
 
     # ----------- ADF -----------
     print("=== Stationnarité (ADF) ===")
-    for i in range(min(5, D)):
+    for i in range(min(10, D)):
         pval = adf_test(X[:, i])
         print(f"Feature {i} → p-value ADF = {pval:.4f}")
     print()

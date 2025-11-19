@@ -4,7 +4,6 @@ import seaborn as sns
 from scipy.stats import skew, kurtosis
 from scipy.signal import periodogram
 
-
 # ============================================================
 # UTILITIES
 # ============================================================
@@ -39,7 +38,7 @@ def dataset_signature(X, max_lag=50):
             "marginal": vec_marginal,
             "temporal": vec_temporal,
             "structure": vec_structure,
-            "combined": concatenation of all
+            "combined": concatenation of all (NON NORMALISÉ)
         }
     """
     X = to_numpy(X)
@@ -57,7 +56,6 @@ def dataset_signature(X, max_lag=50):
         sk = skew(xj)
         ku = kurtosis(xj)
         q10, q50, q90 = np.percentile(xj, [10, 50, 90])
-
         marginals.extend([m, s, sk, ku, q10, q50, q90])
 
         # ----- Temporal
@@ -65,14 +63,12 @@ def dataset_signature(X, max_lag=50):
         selected_lags = [l for l in [1,5,10,20,50] if l <= max_lag]
         acf_feats = [acf[l] for l in selected_lags]
 
-        # Decoherence time
         abs_acf = np.abs(acf)
         if np.any(abs_acf < 1/np.e):
             decoh = np.argmax(abs_acf < 1/np.e)
         else:
             decoh = max_lag
 
-        # Frequency content
         freqs, psd = periodogram(xj)
         main_freq = freqs[np.argmax(psd)]
 
@@ -84,15 +80,30 @@ def dataset_signature(X, max_lag=50):
     corr_vec = C[iu]
 
     combined = np.concatenate([marginals, temporals, corr_vec])
-    print(np.array(marginals))
-    print(np.array(temporals))
-    print(np.array(corr_vec))
     return {
         "marginal": np.array(marginals),
         "temporal": np.array(temporals),
         "structure": np.array(corr_vec),
         "combined": combined
     }
+
+
+# ============================================================
+# NORMALISATION DES SIGNATURES
+# ============================================================
+
+def normalize_signatures(signature_list):
+    """
+    Normalise toutes les signatures COLONNE PAR COLONNE
+    (min-max scaling) pour éviter qu'une métrique domine les autres.
+    """
+    sigs = np.vstack([s["combined"] for s in signature_list])  # (N, Dtotal)
+    mins = sigs.min(axis=0)
+    maxs = sigs.max(axis=0)
+    denom = (maxs - mins) + 1e-8  # avoid div by zero
+
+    normalized = (sigs - mins) / denom
+    return normalized
 
 
 # ============================================================

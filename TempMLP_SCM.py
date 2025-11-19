@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import math, random
-import numpy as np
 from prior.utils import GaussianNoise, XSampler
 
 
